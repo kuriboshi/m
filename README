@@ -1,0 +1,23 @@
+-*- text -*-
+
+M: A minimal build generator
+
+'M' is a build generator for simple C or C++ programs which depends on
+a simple external libraries.  The external libraries can be downloaded
+automatically and, if they are simple enough, built.  'M' uses 'ninja'
+as the backend.
+
+At the moment 'm' is a proof of concept and can only handle fairly
+simple projects.  It's written in ksh which means that any ksh
+statement can be used in the build config files.  However, don't
+expect this to always be the case.
+
+A project can contain one or more config files named '_m'.  There has
+to be at least one '_m' file in the top directory.
+
+See the '_m' file in this directory for a sample config file.
+
+TODO
+
+Automatic and transitive dependencies.
+Defining a system library.
