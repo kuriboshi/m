@@ -1,18 +1,23 @@
 # We start with a 'project' section.  This section contains global
 # configuration options.  Most can be overridden per library/binary.
 project name_of_project
+
 # The 'subdirs' command searches the directory for '_m' files and
 # processes them in the order they're given.
 subdirs bin
+
 # The 'ccflags' and 'ldflags' directives specify the global flags to
 # pass to the compiler, unless overridden by a library or binary
 # specific directive.
+
 ccflags -g -std=c++17
 ldflags -g
+
 # The 'inc' directive adds on or more include directories which are
 # added to the compiler command line.
 inc lib
 inc include
+
 # Define the extension used for source files with 'ext'.  The default
 # is '.cc'.
 ext .cc
@@ -20,11 +25,14 @@ ext .cc
 # Next we define libraries and binaries to build.  Define a library
 # called 'hello' with the 'lib' directive.
 lib hello
+
 # The optional 'src' directive specifies where the source files are
 # located.
 src lib/hello
+
 # Specify a directory where to find header files for the library.
 inc lib/hello
+
 # Add source files using the 'add src' directive.  No need to specify
 # the extension.
 add src hello
@@ -34,6 +42,7 @@ lib world
 src lib/world
 inc lib/world
 add src world
+
 # Add a dependency on the library 'hello'.
 add lib hello
 
