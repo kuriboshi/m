@@ -15,7 +15,7 @@ subdirs bin
 ccflags -g -std=c++17
 ldflags -g
 
-# The 'inc' directive adds on or more include directories which are
+# The 'incs' directive adds on or more include directories which are
 # added to the compiler command line.
 incs lib
 incs include
@@ -28,7 +28,7 @@ ext .cc
 # called 'hello' with the 'lib' directive.
 lib hello
 
-# The optional 'src' directive specifies where the source files are
+# The optional 'srcs' directive specifies where the source files are
 # located.
 srcs lib/hello
 
