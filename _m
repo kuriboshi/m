@@ -1,3 +1,5 @@
+#!/bin/ksh
+
 # We start with a 'project' section.  This section contains global
 # configuration options.  Most can be overridden per library/binary.
 project name_of_project
@@ -15,8 +17,8 @@ ldflags -g
 
 # The 'inc' directive adds on or more include directories which are
 # added to the compiler command line.
-inc lib
-inc include
+incs lib
+incs include
 
 # Define the extension used for source files with 'ext'.  The default
 # is '.cc'.
@@ -28,10 +30,10 @@ lib hello
 
 # The optional 'src' directive specifies where the source files are
 # located.
-src lib/hello
+srcs lib/hello
 
 # Specify a directory where to find header files for the library.
-inc lib/hello
+incs lib/hello
 
 # Add source files using the 'add src' directive.  No need to specify
 # the extension.
@@ -39,8 +41,8 @@ add src hello
 
 # Define a second library which depends on the 'hello' library.
 lib world
-src lib/world
-inc lib/world
+srcs lib/world
+incs lib/world
 add src world
 
 # Add a dependency on the library 'hello'.
@@ -49,7 +51,7 @@ add lib hello
 # Define a binary (executable) called 'hello_world' which depends on
 # both the 'hello' and 'world' libraries.
 bin hello_world
-src bin
+srcs bin
 add src hello_world
 add lib hello
 add lib world
