@@ -330,6 +330,9 @@ _generate_build() {
         elif [[ "${_project_src}" ]]
         then
             _src="${_project_src}"
+        elif [[ "${_srcdir}" == "." ]]
+        then
+            _src="\$topdir"
         else
             _src="\$topdir/${_srcdir}"
         fi
