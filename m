@@ -59,10 +59,12 @@ _generate_rules() {
 rule COMPILE.cc
  command = c++ $incs ${-D} ${-I} $ccflags -MMD -MF $out.d -c -o $out $in
  description = Compile $out
+ depfile = $out.d
 
 rule COMPILE.c
  command = cc $incs ${-I} $cflags -MMD -MF $out.d  -c -o $out $in
  description = Compile $out
+ depfile = $out.d
 
 rule ARCHIVE
  command = ar cr $out $in
