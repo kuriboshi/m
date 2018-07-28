@@ -102,7 +102,8 @@ lib() {
     _init
     _library="$1"
     _target="$1"
-    if [[ "$2" ]]; then
+    if [[ "$2" ]]
+    then
         _lib_tmp["$_library"]="$2"
     else
         _lib_L["${_library}"]="-L\$builddir/lib"
@@ -179,7 +180,8 @@ libs() {
 
 _add_lib() {
     _lib="$1"
-    if [[ "$2" ]]; then
+    if [[ "$2" ]]
+    then
         if [[ "${_lib_I[${_lib}]}" ]]
         then
             _I["${_lib_I[${_lib}]}"]=1
