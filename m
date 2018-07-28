@@ -383,6 +383,7 @@ _generate_deps() {
 _generate_link() {
     echo "build ${_target}: phony \$builddir/bin/${_target}"
     echo "build \$builddir/bin/${_target}: LINK.cc ${_objects[@]}${__deps}"
+    unset __deps
     if [[ ${#_L[@]} > 0 ]]
     then
         echo " -L = ${!_L[@]}"
