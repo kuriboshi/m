@@ -79,6 +79,7 @@ EOF
 typeset -A _lib_I
 typeset -A _lib_L
 typeset -A _lib_libs
+typeset -A _lib_tmp
 typeset -A _subdirs
 typeset -A _project_ccflags
 typeset -A _project_ldflags
@@ -101,7 +102,11 @@ lib() {
     _init
     _library="$1"
     _target="$1"
-    _lib_L["${_library}"]="-L\$builddir/lib"
+    if [[ "$2" ]]; then
+        _lib_tmp["$_library"]="$2"
+    else
+        _lib_L["${_library}"]="-L\$builddir/lib"
+    fi
 }
 
 url() {
@@ -127,7 +132,7 @@ ldflags() {
     fi
 }
 
-src() {
+srcs() {
     _src="\$topdir/$1"
     if [[ "${_project}" ]]
     then
@@ -139,7 +144,7 @@ ext() {
     _ext="$1"
 }
 
-inc() {
+incs() {
     if [[ "$_library" ]]
     then
         case "$1" in
@@ -157,6 +162,51 @@ inc() {
     fi
 }
 
+libs() {
+    if [[ "$_library" ]]
+    then
+        case "$1" in
+            /*)
+                _lib_L["${_library}"]="-L$1"
+                ;;
+            *)
+                _lib_L["${_library}"]="-L\$topdir/$1"
+                ;;
+        esac
+        _L["${_i}"]=1
+    fi
+}
+
+_add_lib() {
+    _lib="$1"
+    if [[ "$2" ]]; then
+        if [[ "${_lib_I[${_lib}]}" ]]
+        then
+            _I["${_lib_I[${_lib}]}"]=1
+        fi
+        if [[ "${_lib_L[${_lib}]}" ]]
+        then
+            _L["${_lib_L[${_lib}]}"]=1
+        fi
+        _link_lib="$(echo ${_lib_tmp[${_lib}]} | sed "s/%/$2/")"
+        _libs[${#_libs[@]}]="-l${_link_lib}"
+    else
+        if [[ "${_lib_I[${_lib}]}" ]]
+        then
+            _I["${_lib_I[${_lib}]}"]=1
+        fi
+        if [[ "${_lib_libs[${_lib}]}" ]]
+        then
+            _libs[${#_libs[@]}]="-l${_lib}"
+            _deps[${#_deps[@]}]="${_lib}"
+        fi
+        if [[ "${_lib_L[${_lib}]}" ]]
+        then
+            _L["${_lib_L[${_lib}]}"]=1
+        fi
+    fi
+}
+
 add() {
     case "$1" in
         src)
@@ -170,62 +220,8 @@ add() {
             _D[$2]=1
             ;;
         lib)
-            unset _lib
-            case "$2" in
-                boost::*)
-                    _I["-I/usr/local/opt/boost/include"]=1
-                    _L["-L/usr/local/opt/boost/lib"]=1
-                    _lib=boost_"${2#boost::}"-mt
-                    _libs[${#_libs[@]}]="-l${_lib}"
-                    ;;
-                boost)
-                    _I["-I/usr/local/opt/boost/include"]=1
-                    ;;
-                icu::*)
-                    _I["-I/usr/local/opt/icu4c/include"]=1
-                    _L["-L/usr/local/opt/icu4c/lib"]=1
-                    _lib="${2#icu::}"
-                    _libs[${#_libs[@]}]="-l${_lib}"
-                    ;;
-                icu)
-                    _I["-I/usr/local/opt/icu4c/include"]=1
-                    ;;
-                pugixml)
-                    _I["-I/usr/local/opt/pugixml/include/pugixml-1.9"]=1
-                    _L["-L/usr/local/opt/pugixml/lib/pugixml-1.9"]=1
-                    _libs[${#_libs[@]}]="-lpugixml"
-                    ;;
-                unistring)
-                    _I["-I/usr/local/opt/libunistring/include"]=1
-                    _L["-L/usr/local/opt/libunistring/lib"]=1
-                    _libs[${#_libs[@]}]="-lunistring"
-                    ;;
-                unittest-cpp)
-                    _I["-I/usr/local/opt/unittest-cpp/include"]=1
-                    _L["-L/usr/local/opt/unittest-cpp/lib"]=1
-                    _libs[${#_libs[@]}]="-lUnitTest++"
-                    ;;
-                sys::*)
-                    _lib="${2#sys::}"
-                    _libs[${#_libs[@]}]="-l${_lib}"
-                    ;;
-                *)
-                    _lib="$2"
-                    if [[ "${_lib_I[${_lib}]}" ]]
-                    then
-                        _I["${_lib_I[${_lib}]}"]=1
-                    fi
-                    if [[ "${_lib_libs[${_lib}]}" ]]
-                    then
-                        _libs[${#_libs[@]}]="-l${_lib}"
-                        _deps[${#_deps[@]}]="${_lib}"
-                    fi
-                    if [[ "${_lib_L[${_lib}]}" ]]
-                    then
-                        _L["${_lib_L[${_lib}]}"]=1
-                    fi
-                    ;;
-            esac
+            shift
+            _add_lib "$@"
             ;;
     esac
 }
