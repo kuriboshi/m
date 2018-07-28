@@ -232,6 +232,10 @@ subdirs() {
     _subdirs["${#_subdirs[@]}"]="${topdir}/$1"
 }
 
+load() {
+    . "$1"
+}
+
 _init() {
     unset _library
     unset _binary
@@ -344,13 +348,13 @@ _generate_build() {
             _objects[${#_objects[@]}]="$o"
             echo "build $o: ${__rule} ${_src}/$i${_ext}"
             [[ "$_ccflags" ]] && echo " ccflags = ${_ccflags[@]}"
-            if [[ ${#_I[@]} > 0 ]]
-            then
-                echo " -I = ${!_I[@]}"
-            fi
             if [[ ${#_D[@]} > 0 ]]
             then
                 echo " -D = ${!_D[@]}"
+            fi
+            if [[ ${#_I[@]} > 0 ]]
+            then
+                echo " -I = ${!_I[@]}"
             fi
         done
     fi
