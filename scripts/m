@@ -88,6 +88,7 @@ project() {
     _init
     _project="$1"
     _target="$1"
+    _project_ext=".cc"
 }
 
 bin() {
@@ -142,7 +143,12 @@ srcs() {
 }
 
 ext() {
-    _ext="$1"
+    if [[ "${_project}" ]]
+    then
+        _project_ext="$1"
+    else
+        _ext="$1"
+    fi
 }
 
 incs() {
@@ -327,7 +333,7 @@ _generate_build() {
         echo "# $1: ${_target}"
 
         _build="${_build:-\$builddir/obj/${_target}}"
-        _ext="${_ext:-.cc}"
+        _ext="${_ext:-${_project_ext}}"
         if [[ "${_src}" ]]
         then
             :
