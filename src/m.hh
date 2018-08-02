@@ -361,6 +361,7 @@ class Project
     Project(Project&& o) noexcept
       : _name(o._name), _topdir(o._topdir), _builddir(o._builddir),
         _ccflags(o._ccflags), _ldflags(o._ldflags),
+        _source_path(o._source_path), _extension(o._extension),
         _include_path(o._include_path), _library_path(o._library_path),
         _binaries(o._binaries), _libraries(o._libraries)
     {
