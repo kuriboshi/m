@@ -1,27 +1,120 @@
 -*- text -*-
 
 M: A minimal build generator
+============================
+
+Designed for simple C or C++ projects which don't have fancy build
+rules and depends on external header only libraries or libraries which
+are simple enough to add an 'M' build script for.  It can download
+these external libraries from a remote git repository.  'M' uses
+'ninja' as the backend to do the actual build.
+
+Only Unix and Unix-like systems have any chance of working at the
+moment.  There is a proof of concept version written in ksh93 in the
+'scripts' directory and a version written in C++ in the 'src'
+directory.  They are roughly compatible with some slight variation in
+the output for some cases.
+
+Files named '_m' defines build rules and dependencies.  You can have
+one or more '_m' files in sub directories with at least one in the top
+level directory.  When using the ksh93 version of 'M' the config files
+are actually ksh scripts.  Obviously this is not the case when using
+the C++ version of 'M' to process the '_m' files.  See the '_m' file
+in this directory for a sample config file.
+
+I created 'M' as a simple build generator for my own personal
+projects.  The goal was something simple with which I could quickly
+describe how to compile a project without too much trouble.  I chose
+convention over configuration.  The design is coloured by my
+experience writing makefiles over many years.
+
+With my makefiles I put a lot of effort into writing a set of
+elaborate makefiles which hides all the complexities.  These makefiles
+were then included in the project specific makefiles.  The project
+specific makefiles would be very simple: A list of files to compile, a
+list of libraries the project depended on, and sometimes some defines
+needed for some special cases.
+
+The common makefiles would handle system differences and would try to
+automatically detect implicit dependencies.  For example, if you
+included a library wrapping database calls the required client
+libraries for the database would automatically be included in the link
+line.
+
+As the common makefiles grew more and more complex and as I realised
+that some problems were difficult to solve in a nice way using only
+make I started to consider other popular build generators.  The two
+most prominent ones I looked at were CMake and Meson.
+
+CMake is by many considered the industry standard for C++ projects and
+is used by a wide range of high profile projects.  It's also widely
+considered poorly documented (although work is ongoing trying to
+address this problem).  It's hard for new users to write a CMake file
+from scratch.  Personally I'm not a fan of the unusual syntax chosen
+for the CMake language.  However, it's clearly very powerful and a
+good example of how it can be leveraged is the vcpkg project by
+Microsoft.  vcpkg is similar to the BSD ports system except using
+CMake instead of make to handle the builds.
+
+Meson is another build generator which is rapidly gaining popularity.
+It seems to be much better designed and more solid foundation to
+develop further compared to CMake.  The most questionable decision in
+my view is the choice of implementation language: Python.  Not just
+any Python but Pyton >= 3.5.  Python is a good language and it does
+make sense to build a project like Meson in Python.  I just think it
+would have been better to write it in C (or C++).  Such a fundamental
+tool should really not have such a heavy dependency.  I know that in
+principle someone could write a version in C based on the
+specification for Meson.
+
+Compared to CMake, Meson is much easier to get started with.  I could
+put something together pretty quickly.  The documentation is much
+better, helped by the fact that the syntax is much more main stream.
+However, in my case I found myself in want of a Meson build file
+generator which would negate some of its benefits.
+
+In the end I decided that for my purpose a dependency on Python was
+just too much.  Ideally I would want to use plain C but since I target
+projects primarily written in C++ I don't feel bad about choosing C++
+as the implementation language for 'M'.  Right now 'M' is so simple
+that it could be quickly reimplemented in just about any language, as
+proven by my initial POC implementaiton in ksh93.
+
+The C++ version of 'M' requires C++-14.  Since my projects are almost
+always in C++ and I aim to use the latest version of C++ if at all
+possible it makes sense that my build system is also written in a
+newer version of C++.
+
+The reason I decided on a build generator instead of a 'make'
+replacement is that it's really just the most practical solution.  I
+have over my years of using make considered writing a better make.
+I'm a big fan of make, but writing a better version of it seemed like
+a waste of effort.
+
+I picked ninja as the backend for 'M' because I liked the simplicity
+of the build file language with its resemblance to make.  I also liked
+how it dealt with things which traditionally has been annoying to do
+well in make: out-of-tree builds, automatically creating intermediate
+directories, the ease of dealing with header file dependencies, the
+robustness of parallel builds, and I'm sure many other good reasons.
+
+The claims of increased speed I'm not so sure of.  In all my
+benchmarks my hand crafted makefiles performed as well as or, in some
+cases, slightly better than the equivalent ninja build files.  Perhaps
+it's because I compile C++ code and a build spends proportionally more
+time compiling than deciding that to do next or perhaps my projects
+are not big enough to reap the benefits of ninja.
+
+I'm happy with my choice.  Generating the build.ninja file is almost
+instantaneous, adding next to nothing to the overall build time of my
+projects.  Compared to CMake or Meson it leaves a lot to be desired
+and you quickly run into limitations when trying to write a 'M' config
+file for any random project.  There is no handling of cross platform
+builds and I'm sure there are a lot of cases where 'M' simply can't be
+used in its current form.  Projects can really only consist of sets of
+source files which need to be built into libraries or executables.
 
 Copyright 2018 Krister Joas <krister@joas.jp>
-
-'M' is a build generator for simple C or C++ programs which depends on
-simple external libraries.  The external libraries can be downloaded
-automatically and, if they are simple enough, built.  'M' uses 'ninja'
-as the backend.
-
-The 'm' file is a proof of concept and can only handle fairly simple
-projects.  It's written in ksh which means that any ksh statement can
-be used in the build config files.  However, don't expect this to
-always be the case.
-
-A project can contain one or more config files named '_m'.  There has
-to be at least one '_m' file in the top directory.
-
-See the '_m' file in this directory for a sample config file.
-
-TODO
-
-Automatic and transitive dependencies.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
