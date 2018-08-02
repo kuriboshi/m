@@ -217,8 +217,6 @@ class Library : public Object, public Factory<Library>
           includes_v.push_back(inc);
         for(const auto& l: _libraries)
         {
-          for(const auto& def: l->defines())
-            defines_v.push_back(def);
           for(const auto& inc: l->include_path())
             includes_v.push_back(inc);
         }
@@ -313,8 +311,6 @@ class Binary : public Object, public Factory<Binary>
               deps_v.push_back(l->name());
           }
         }
-        for(const auto& def: l->defines())
-          defines_v.push_back(def);
         for(const auto& inc: l->include_path())
           includes_v.push_back(inc);
         for(const auto& lib: l->library_path())
