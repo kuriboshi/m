@@ -38,7 +38,7 @@ R"(rule COMPILE.cc
  depfile = $out.d
 
 rule COMPILE.c
- command = cc $incs ${-D} ${-I} $cflags -MMD -MF $out.d  -c -o $out $in
+ command = cc $incs ${-D} ${-I} $ccflags -MMD -MF $out.d  -c -o $out $in
  description = Compile $out
  depfile = $out.d
 
