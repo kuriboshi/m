@@ -156,10 +156,10 @@ incs() {
     then
         case "$1" in
             /*)
-                _lib_I["${_library}"]="$1"
+                _lib_I["${_library}"]="-I$1"
                 ;;
             *)
-                _lib_I["${_library}"]="\$topdir/$1"
+                _lib_I["${_library}"]="-I\$topdir/$1"
                 ;;
         esac
         _i="${_lib_I[${_library}]}"
@@ -167,10 +167,10 @@ incs() {
     else
         case "$1" in
             /*)
-                _incs[${#_incs[@]}]="$1"
+                _incs[${#_incs[@]}]="-I$1"
                 ;;
             *)
-                _incs[${#_incs[@]}]="\$topdir/$1"
+                _incs[${#_incs[@]}]="-I\$topdir/$1"
                 ;;
         esac
     fi
@@ -367,7 +367,7 @@ _generate_build() {
             fi
             if [[ ${#_I[@]} > 0 ]]
             then
-                echo " -I = -I${!_I[@]}"
+                echo " -I = ${!_I[@]}"
             fi
         done
     fi
