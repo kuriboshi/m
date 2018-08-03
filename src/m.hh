@@ -117,6 +117,11 @@ class Object
       expand_type{0, (_ccflags.push_back(args), 0)...};
     }
     template<typename ...T>
+    void cflags(T... args)
+    {
+      expand_type{0, (_cflags.push_back(args), 0)...};
+    }
+    template<typename ...T>
     void ldflags(T... args)
     {
       expand_type{0, (_ldflags.push_back(args), 0)...};
@@ -176,6 +181,7 @@ class Object
     virtual void generate(std::ostream&, const Project&) const {}
   protected:
     std::vector<std::string> _ccflags;
+    std::vector<std::string> _cflags;
     std::vector<std::string> _ldflags;
     std::string _source_path;
     std::string _extension;
@@ -229,6 +235,7 @@ class Library : public Object, public Factory<Library>
             << rule(extension(project)) << " $topdir/"
             << src << i << extension(project) << std::endl;
           print(_ccflags, out, " ccflags =", [&out](const auto& s) { out << " " << s; });
+          print(_ccflags, out, " cflags =", [&out](const auto& s) { out << " " << s; });
           print(defines_v.vector(), out, " -D =", [&out](const auto& s) { out << " " << s; });
           print(includes_v.vector(), out, " -I =",
             [&out](const auto& s) {
@@ -325,6 +332,7 @@ class Binary : public Object, public Factory<Binary>
           << rule(extension(project)) << " $topdir/"
           << src << i << extension(project) << std::endl;
         print(_ccflags, out, " ccflags =", [&out](const auto& s) { out << " " << s; });
+        print(_cflags, out, " cflags =", [&out](const auto& s) { out << " " << s; });
         print(defines_v.vector(), out, " -D =", [&out](const auto& s) { out << " " << s; });
         print(includes_v.vector(), out, " -I =",
           [&out](const auto& s) {
@@ -356,7 +364,7 @@ class Project
     Project(const Project& o) = delete;
     Project(Project&& o) noexcept
       : _name(o._name), _topdir(o._topdir), _builddir(o._builddir),
-        _ccflags(o._ccflags), _ldflags(o._ldflags),
+        _ccflags(o._ccflags), _cflags(o._cflags), _ldflags(o._ldflags),
         _source_path(o._source_path), _extension(o._extension),
         _include_path(o._include_path), _library_path(o._library_path),
         _binaries(o._binaries), _libraries(o._libraries)
@@ -373,6 +381,11 @@ class Project
     void ccflags(T... args)
     {
       expand_type{0, (_ccflags.push_back(args), 0)...};
+    }
+    template<typename ...T>
+    void cflags(T... args)
+    {
+      expand_type{0, (_cflags.push_back(args), 0)...};
     }
     template<typename ...T>
     void ldflags(T... args)
@@ -420,6 +433,7 @@ class Project
       out << "topdir = " << _topdir << std::endl;
       out << "builddir = " << _builddir << std::endl;
       print(_ccflags, out, "ccflags =", [&out](const auto& s) { out << " " << s; });
+      print(_cflags, out, "cflags =", [&out](const auto& s) { out << " " << s; });
       print(_ldflags, out, "ldflags =", [&out](const auto& s) { out << " " << s; });
       print(_include_path, out, "incs =", [&out](const auto& s) {
           out << " -I";
@@ -443,6 +457,7 @@ class Project
     const std::string _topdir;
     const std::string _builddir;
     std::vector<std::string> _ccflags;
+    std::vector<std::string> _cflags;
     std::vector<std::string> _ldflags;
     std::string _source_path;
     std::string _extension;
@@ -471,12 +486,19 @@ class BuilderBase
       return *this;
     }
     template<typename ...T>
+    BuilderBase& cflags(T... arg)
+    {
+      expand_type{0, (cflag(arg), 0)...};
+      return *this;
+    }
+    template<typename ...T>
     BuilderBase& ldflags(T... arg)
     {
       expand_type{0, (ldflag(arg), 0)...};
       return *this;
     }
     virtual void ccflag(const std::string&) { error("ccflags"); }
+    virtual void cflag(const std::string&) { error("cflags"); }
     virtual void ldflag(const std::string&) { error("ldflags"); }
     virtual BuilderBase& incs(const std::string&) { return error("incs"); }
     virtual BuilderBase& libs(const std::string&) { return error("libs"); }
@@ -509,6 +531,7 @@ class ProjectBuilder : public BuilderBase
       const std::string& build);
 
     virtual void ccflag(const std::string& flag) { project.ccflags(flag); }
+    virtual void cflag(const std::string& flag) { project.cflags(flag); }
     virtual void ldflag(const std::string& flag) { project.ldflags(flag); }
     virtual BuilderBase& incs(const std::string& inc)
     {
@@ -545,6 +568,7 @@ class LibraryBuilder : public BuilderBase
     }
     virtual ~LibraryBuilder() { close(); }
     virtual void ccflag(const std::string& flag) { _library.ccflags(flag); }
+    virtual void cflag(const std::string& flag) { _library.cflags(flag); }
     virtual void ldflag(const std::string& flag) { _library.ldflags(flag); }
     virtual BuilderBase& incs(const std::string& inc)
     {
@@ -622,6 +646,7 @@ class BinaryBuilder : public BuilderBase
       _binary.srcs(project.src_path());
     }
     virtual void ccflag(const std::string& flag) { _binary.ccflags(flag); }
+    virtual void cflag(const std::string& flag) { _binary.cflags(flag); }
     virtual void ldflag(const std::string& flag) { _binary.ldflags(flag); }
     virtual BuilderBase& incs(const std::string& inc)
     {

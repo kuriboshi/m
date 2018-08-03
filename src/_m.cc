@@ -69,6 +69,11 @@ BuilderBase& Loader::load_file(const std::string& file, BuilderBase* initial_bui
       for(int i = 1; i != result.size(); ++i)
         builder = &builder->ccflags(result[i]);
     }
+    else if(directive == "cflags"s && size >= 1)
+    {
+      for(int i = 1; i != result.size(); ++i)
+        builder = &builder->cflags(result[i]);
+    }
     else if(directive == "ldflags"s && size >= 1)
     {
       for(int i = 1; i != result.size(); ++i)
