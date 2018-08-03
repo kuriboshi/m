@@ -123,14 +123,14 @@ int main(int argc, const char** argv)
   const std::vector<std::string> args{argv + start, argv + argc};
   try
   {
-    {
-      m::Loader loader(topdir, builddir);
-      m::Project p = loader.load_file(_m);
-      std::ofstream out{"build.ninja"};
-      p.generate(out);
-    }
+    m::Loader loader(topdir, builddir);
+    m::Project p = loader.load_file(_m);
+    std::ofstream out{"build.ninja"};
+    if(!out)
+      throw std::runtime_error("Can't open build.ninja for writing");
+    p.generate(out);
     fs::path ninja = bp::search_path("ninja");
-    int result = bp::system(ninja, args);
+    bp::system(ninja, args);
   }
   catch(const std::runtime_error& e)
   {
