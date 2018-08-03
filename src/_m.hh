@@ -27,7 +27,7 @@ class Loader
     Loader(const std::string& topdir = ".", const std::string& builddir = "build")
       : _topdir(topdir), _builddir(builddir)
     {}
-    BuilderBase* load_file(const std::string& file, BuilderBase* initial_builder = nullptr);
+    BuilderBase& load_file(const std::string& file, BuilderBase* initial_builder = nullptr);
   private:
     void find_files(const fs::path& dir, const std::string& file, std::set<std::string>& result);
     const std::string _topdir;

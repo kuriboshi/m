@@ -26,7 +26,7 @@
 using namespace std::literals::string_literals;
 
 namespace m {
-BuilderBase* Loader::load_file(const std::string& file, BuilderBase* initial_builder)
+BuilderBase& Loader::load_file(const std::string& file, BuilderBase* initial_builder)
 {
   const std::regex ws{"\\s+"};
   const std::regex comment{"#.*"};
@@ -34,8 +34,8 @@ BuilderBase* Loader::load_file(const std::string& file, BuilderBase* initial_bui
   if(!in)
     throw std::runtime_error("Can't open file: " + file);
   BuilderBase* builder = initial_builder;
-  if(initial_builder != nullptr)
-    initial_builder->project().srcs(fs::path(file).parent_path().string());
+  if(builder != nullptr)
+    builder->project().srcs(fs::path(file).parent_path().string());
   std::string line;
   int line_count = 0;
   for(std::string s; std::getline(in, s);)
@@ -62,6 +62,8 @@ BuilderBase* Loader::load_file(const std::string& file, BuilderBase* initial_bui
     const auto& directive = result[0];
     if(directive == "project"s && size == 2)
       builder = &ProjectBuilder::create(result[1], _topdir, _builddir);
+    else if(!builder)
+      throw std::runtime_error("First directrive must be 'project'");
     else if(directive == "ccflags"s && size >= 1)
     {
       for(int i = 1; i != result.size(); ++i)
@@ -101,13 +103,13 @@ BuilderBase* Loader::load_file(const std::string& file, BuilderBase* initial_bui
         builder = &builder->add_def(result[2]);
     }
     else if(directive == "load"s && size == 2)
-      builder = load_file(result[1], builder);
+      builder = &load_file(result[1], builder);
     else if(directive == "subdirs"s && size == 2)
     {
       std::set<std::string> list;
       find_files(result[1], "_m", list);
       for(auto _m: list)
-        builder = load_file(_m, builder);
+        builder = &load_file(_m, builder);
     }
     else
     {
@@ -118,7 +120,7 @@ BuilderBase* Loader::load_file(const std::string& file, BuilderBase* initial_bui
     }
     line.clear();
   }
-  return builder;
+  return *builder;
 }
 
 void Loader::find_files(const fs::path& dir, const std::string& file, std::set<std::string>& result)

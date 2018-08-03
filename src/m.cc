@@ -125,7 +125,7 @@ int main(int argc, const char** argv)
   {
     {
       m::Loader loader(topdir, builddir);
-      m::Project p = *loader.load_file(_m);
+      m::Project p = loader.load_file(_m);
       std::ofstream out{"build.ninja"};
       p.generate(out);
     }
