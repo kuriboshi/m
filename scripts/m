@@ -62,7 +62,7 @@ rule COMPILE.cc
  depfile = $out.d
 
 rule COMPILE.c
- command = cc $incs ${-D} ${-I} $ccflags -MMD -MF $out.d  -c -o $out $in
+ command = cc $incs ${-D} ${-I} $cflags -MMD -MF $out.d  -c -o $out $in
  description = Compile $out
  depfile = $out.d
 
@@ -82,6 +82,7 @@ typeset -A _lib_libs
 typeset -A _lib_tmp
 typeset -A _subdirs
 typeset -A _project_ccflags
+typeset -A _project_cflags
 typeset -A _project_ldflags
 
 project() {
@@ -122,6 +123,15 @@ ccflags() {
         _project_ccflags[${#_project_ccflags[@]}]="$@"
     else
         _ccflags[${#_ccflags[@]}]="$@"
+    fi
+}
+
+cflags() {
+    if [[ "${_project}" ]]
+    then
+        _project_cflags[${#_project_cflags[@]}]="$@"
+    else
+        _cflags[${#_cflags[@]}]="$@"
     fi
 }
 
@@ -267,6 +277,8 @@ _init() {
     unset _l
     unset _ccflags
     typeset -A _ccflags
+    unset _cflags
+    typeset -A _cflags
     unset _ldflags
     typeset -A _ldflags
     unset _I
@@ -320,6 +332,7 @@ _rule() {
 _generate_project() {
     _generate_preamble
     [[ "$_project_ccflags" ]] && echo "ccflags = ${_project_ccflags[@]}"
+    [[ "$_project_cflags" ]] && echo "cflags = ${_project_cflags[@]}"
     [[ "$_project_ldflags" ]] && echo "ldflags = ${_project_ldflags[@]}"
     if [[ "${_incs}" ]]
     then
@@ -361,6 +374,7 @@ _generate_build() {
             _objects[${#_objects[@]}]="$o"
             echo "build $o: ${__rule} ${_src}/$i${_ext}"
             [[ "$_ccflags" ]] && echo " ccflags = ${_ccflags[@]}"
+            [[ "$_cflags" ]] && echo " cflags = ${_cflags[@]}"
             if [[ ${#_D[@]} > 0 ]]
             then
                 echo " -D = ${!_D[@]}"
