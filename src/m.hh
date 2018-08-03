@@ -421,7 +421,13 @@ class Project
       out << "builddir = " << _builddir << std::endl;
       print(_ccflags, out, "ccflags =", [&out](const auto& s) { out << " " << s; });
       print(_ldflags, out, "ldflags =", [&out](const auto& s) { out << " " << s; });
-      print(_include_path, out, "incs =", [&out](const auto& s) { out << " -I" << s; });
+      print(_include_path, out, "incs =", [&out](const auto& s) {
+          out << " -I";
+          if(s[0] == '/')
+            out << s;
+          else
+            out << "$topdir/" << s;
+        });
       out << std::endl << preamble[1] << std::endl;
       for(const auto& i: _libraries)
       {
