@@ -31,6 +31,8 @@ BuilderBase* Loader::load_file(const std::string& file, BuilderBase* initial_bui
   const std::regex ws{"\\s+"};
   const std::regex comment{"#.*"};
   std::ifstream in{file};
+  if(!in)
+    throw std::runtime_error("Can't open file: " + file);
   BuilderBase* builder = initial_builder;
   if(initial_builder != nullptr)
     initial_builder->project().srcs(fs::path(file).parent_path().string());
