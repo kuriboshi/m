@@ -339,7 +339,7 @@ _generate_project() {
         print -n "incs ="
         for i in "${_incs[@]}"
         do
-            print -n -- " -I$i"
+            print -n -- " $i"
         done
         print ""
     fi
