@@ -63,7 +63,7 @@ BuilderBase& Loader::load_file(const std::string& file, BuilderBase* initial_bui
     if(directive == "project"s && size == 2)
       builder = &ProjectBuilder::create(result[1], _topdir, _builddir);
     else if(!builder)
-      throw std::runtime_error("First directrive must be 'project'");
+      throw std::runtime_error("First directive must be 'project'");
     else if(directive == "ccflags"s && size >= 1)
     {
       for(int i = 1; i != result.size(); ++i)
@@ -118,7 +118,7 @@ BuilderBase& Loader::load_file(const std::string& file, BuilderBase* initial_bui
     }
     else
     {
-      std::cerr << "illegal directive line " << line_count << ":";
+      std::cerr << "Illegal directive line " << line_count << ":";
       for(auto& i: result)
         std::cerr << " " << i;
       std::cerr << std::endl;
