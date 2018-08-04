@@ -16,16 +16,11 @@
 
 # We start with a 'project' section.  This section contains global
 # configuration options.  Most can be overridden per library/binary.
-project name_of_project
+project hello_world
 
-# The 'subdirs' command searches the directory for '_m' files and
-# processes them in the order they're given.
-subdirs bin
-
-# The 'ccflags' and 'ldflags' directives specify the global flags to
-# pass to the compiler, unless overridden by a library or binary
-# specific directive.
-
+# The 'ccflags', 'cflags', and 'ldflags' directives specify the global
+# flags to pass to the compiler, unless overridden by a library or
+# binary specific directive.
 ccflags -g -std=c++17
 ldflags -g
 
@@ -35,37 +30,40 @@ incs lib
 incs include
 
 # Define the extension used for source files with 'ext'.  The default
-# is '.cc'.
+# is '.cc'.  Supported extensions: .c, .cc, .cpp, .cxx, and .C.
 ext .cc
 
 # Next we define libraries and binaries to build.  Define a library
 # called 'hello' with the 'lib' directive.
 lib hello
 
-# The optional 'srcs' directive specifies where the source files are
-# located.
-srcs lib/hello
+  # The optional 'srcs' directive specifies where the source files are
+  # located.
+  srcs lib/hello
 
-# Specify a directory where to find header files for the library.
-incs lib/hello
+  # Specify a directory where to find header files for the library.
+  incs lib/hello
 
-# Add source files using the 'add src' directive.  No need to specify
-# the extension.
-add src hello
+  # Add definitions with 'add def'.  Beware of quoting strings: The
+  # ksh93 version handles quotes poorly.
+  add def -DHELLO=WORLD
+
+  # Add source files using the 'add src' directive.  No need to
+  # specify the extension.
+  add src hello
 
 # Define a second library which depends on the 'hello' library.
 lib world
-srcs lib/world
-incs lib/world
-add src world
+  srcs lib/world
+  incs lib/world
+  add src world
 
-# Add a dependency on the library 'hello'.
-add lib hello
+  # Add a dependency on the library 'hello'.
+  add lib hello
 
-# Define a binary (executable) called 'hello_world' which depends on
-# both the 'hello' and 'world' libraries.
-bin hello_world
-srcs bin
-add src hello_world
-add lib hello
-add lib world
+# The 'subdirs' command searches the directory for '_m' files and
+# processes them in the order they're given.  Note that the '_m' files
+# are read in order and dependencies has to be declared before use.
+# Alternatively you can use the 'load' directive to load a specific
+# '_m' file.
+subdirs bin
