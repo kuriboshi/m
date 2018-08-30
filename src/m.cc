@@ -160,6 +160,8 @@ int main(int argc, const char** argv)
       throw std::runtime_error("Can't open build.ninja for writing");
     p.generate(out);
     fs::path ninja = bp::search_path("ninja");
+    if(ninja.empty())
+      throw std::runtime_error("Can't find program 'ninja'");
     bp::system(ninja, args);
   }
   catch(const std::runtime_error& e)
