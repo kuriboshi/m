@@ -72,31 +72,61 @@ ProjectBuilder& ProjectBuilder::create(const std::string& name, const std::strin
   return *new ProjectBuilder(name, top, build);
 }
 
-void Project::fetch(const std::string& name, const std::string& url, const std::string& hash) const
+class Git
+{
+  public:
+    Git() : _git(bp::search_path("git")) {}
+    int clone(const std::string& url, const fs::path& location)
+    {
+      return bp::system(_git, "clone", url, location);
+    }
+    int summary(const std::string& ref)
+    {
+      return bp::system(_git, "show", "--summary", ref, bp::std_out > bp::null);
+    }
+    int fetch(const std::string& from)
+    {
+      return bp::system(_git, "fetch", from);
+    }
+    const std::string get_hash(const std::string& ref)
+    {
+      std::future<std::string> os;
+      bp::system(_git, "log", "--pretty=format:%H", "-1", ref, bp::std_out > os);
+      return os.get();
+    }
+    int reset_hard(const std::string& ref)
+    {
+      return bp::system(_git, "reset", "--hard", ref);
+    }
+  private:
+    fs::path _git;
+};
+
+void Project::fetch(const std::string& name, const std::string& url, const std::string& hash_or_tag) const
 {
   fs::path location = _topdir;
   location /= ".externals";
   location /= name;
-  auto git = bp::search_path("git");
+  Git git;
   if(!fs::exists(location))
   {
     std::cout << "Cloning " << url << std::endl;
-    bp::system(git, "clone", url, location);
+    git.clone(url, location);
   }
   auto current_path = fs::current_path();
   fs::current_path(location);
-  auto ec = bp::system(git, "show", "--summary", hash, bp::std_out > bp::null);
+  auto ec = git.summary(hash_or_tag);
   if(ec != 0)
   {
     std::cout << "Fetching " << location << std::endl;
-    bp::system(git, "fetch", "origin");
+    git.fetch("origin");
   }
-  std::future<std::string> os;
-  ec = bp::system(git, "show", "--pretty=format:%H", "--no-patch", bp::std_out > os);
-  if(os.get() != hash)
+  auto head = git.get_hash("HEAD");
+  auto hash = git.get_hash(hash_or_tag);
+  if(head != hash)
   {
     std::cout << "Reset " << location << std::endl;
-    bp::system(git, "reset", "--hard", hash);
+    git.reset_hard(hash_or_tag);
   }
   fs::current_path(current_path);
 }
