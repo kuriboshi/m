@@ -50,6 +50,13 @@ BuilderBase& BuilderBase::lib(const std::string& name)
   return *_current;
 }
 
+BuilderBase& BuilderBase::frameworks(const std::string& name, const std::string& path)
+{
+  delete _current;
+  _current = new FrameworkBuilder(_project, name, path);
+  return *_current;
+}
+
 BuilderBase& BuilderBase::lib(const std::string& name, const std::string& pattern)
 {
   delete _current;

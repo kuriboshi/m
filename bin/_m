@@ -21,3 +21,12 @@ bin hello_world
   add src hello_world
   add lib hello
   add lib world
+
+# Using frameworks, e.g. Qt
+
+#frameworks qt /usr/local/opt/qt/lib
+
+#bin qt
+#  add src qt
+#  add framework qt QtWidgets
+#  add framework qt QtCore

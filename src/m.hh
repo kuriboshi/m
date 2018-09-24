@@ -256,6 +256,16 @@ class Library : public Object, public Factory<Library>
     std::shared_ptr<External> _external;
 };
 
+class Framework : public Object, public Factory<Framework>
+{
+  public:
+    Framework(const std::string& name, const std::string& path) : Object(name), _path(path) {}
+    const std::string& path() const { return _path; }
+    virtual ~Framework() {}
+  private:
+    const std::string _path;
+};
+
 class Template : public Library, public Factory<Template>
 {
   public:
@@ -296,6 +306,11 @@ class Binary : public Object, public Factory<Binary>
   public:
     Binary(const std::string& name) : Object(name) {}
     virtual ~Binary() {}
+    using Object::add;
+    virtual void add(const Framework& framework, const std::string& name)
+    {
+      _frameworks.push_back(std::make_pair(&framework, name));
+    }
     virtual void generate(std::ostream& out, const Project& project) const override
     {
       out << std::endl << "# bin: " << name() << std::endl;
@@ -303,6 +318,8 @@ class Binary : public Object, public Factory<Binary>
       unique_vector<std::string> defines_v;
       unique_vector<std::string> includes_v;
       unique_vector<std::string> libsearch_v;
+      unique_vector<std::string> frameworksearch_v;
+      unique_vector<std::string> frameworks_v;
       unique_vector<std::string> deps_v;
       for(const auto& def: defines())
         defines_v.push_back(def);
@@ -323,6 +340,12 @@ class Binary : public Object, public Factory<Binary>
         for(const auto& lib: l->library_path())
           libsearch_v.push_back(lib);
       }
+      for(const auto& f: _frameworks)
+      {
+        frameworks_v.push_back(f.second);
+        includes_v.push_back(f.first->path() + "/"s + f.second + ".framework/Headers"s);
+        frameworksearch_v.push_back(f.first->path());
+      }
       for(const auto& i: _sources)
       {
         std::string src = src_path();
@@ -341,6 +364,7 @@ class Binary : public Object, public Factory<Binary>
             else
               out << " -I$topdir/" << s;
           });
+        print(frameworksearch_v.vector(), out, " -F =", [&out](const auto& s) { out << " -F" << s; });
       }
       out << "build " << name() << ": phony $builddir/bin/" << name() << std::endl;
       out << "build $builddir/bin/" << name() << ": LINK.cc";
@@ -352,7 +376,11 @@ class Binary : public Object, public Factory<Binary>
       print(_ldflags, out, " ldflags =", [&out](const auto& s) { out << " " << s; });
       print(libsearch_v.vector(), out, " -L =", [&out](const auto& s) { out << " -L" << s; });
       print(libs_v.vector(), out, " -l =", [&out](const auto& s) { out << " -l" << s; });
+      print(frameworksearch_v.vector(), out, " -F =", [&out](const auto& s) { out << " -F" << s; });
+      print(frameworks_v.vector(), out, " -framework =", [&out](const auto& s) { out << " -framework " << s; });
     }
+  private:
+    std::vector<std::pair<const Framework*, const std::string>> _frameworks;
 };
 
 class Project
@@ -478,6 +506,7 @@ class BuilderBase
     Project& project() { return _project; }
     BuilderBase& lib(const std::string& name);
     BuilderBase& lib(const std::string& name, const std::string& pattern);
+    BuilderBase& frameworks(const std::string& name, const std::string& path);
     BuilderBase& bin(const std::string& name);
     template<typename ...T>
     BuilderBase& ccflags(T... arg)
@@ -509,6 +538,7 @@ class BuilderBase
     virtual BuilderBase& add_def(const std::string&) { return error("add_def"); }
     virtual BuilderBase& add_lib(const std::string&) { return error("add_lib"); }
     virtual BuilderBase& add_lib(const std::string&, const std::string&) { return error("add_lib"); }
+    virtual BuilderBase& add_framework(const std::string&, const std::string&) { return error("add_framework"); }
   protected:
     virtual void close() {}
     Project& _project;
@@ -701,6 +731,13 @@ class BinaryBuilder : public BuilderBase
       }
       return *this;
     }
+    virtual BuilderBase& add_framework(const std::string& framework, const std::string& name)
+    {
+      auto* f = Factory<Framework, std::string>::get(framework);
+      if(f)
+        _binary.add(*f, name);
+      return *this;
+    }
     virtual ~BinaryBuilder() { close(); }
   private:
     virtual void close()
@@ -739,4 +776,16 @@ class TemplateBuilder : public BuilderBase
     }
     Template& _template;
 };
+
+class FrameworkBuilder : public BuilderBase
+{
+  public:
+    FrameworkBuilder(Project& project, const std::string& name, const std::string& path)
+      : BuilderBase(project), _framework(Factory<Framework, std::string>::create(name, path))
+    {}
+    virtual ~FrameworkBuilder() { close(); }
+  private:
+    Framework& _framework;
+};
+
 }

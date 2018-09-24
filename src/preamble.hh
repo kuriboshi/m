@@ -33,7 +33,7 @@ const std::vector<std::string> preamble =
 # limitations under the License.)",
 
 R"(rule COMPILE.cc
- command = c++ $incs ${-D} ${-I} $ccflags -MMD -MF $out.d -c -o $out $in
+ command = c++ $incs ${-D} ${-I} ${-F} $ccflags -MMD -MF $out.d -c -o $out $in
  description = Compile $out
  depfile = $out.d
 
@@ -47,6 +47,6 @@ rule ARCHIVE
  description = Archive $out
 
 rule LINK.cc
- command = c++ $ldflags $in ${-L} ${-l} -o $out
+ command = c++ $ldflags $in ${-L} ${-l} ${-F} ${-framework} -o $out
  description = Link $out)"
 };

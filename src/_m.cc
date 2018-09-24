@@ -93,6 +93,8 @@ BuilderBase& Loader::load_file(const std::string& file, BuilderBase* initial_bui
       builder = &builder->lib(result[1]);
     else if(directive == "lib"s && size == 3)
       builder = &builder->lib(result[1], result[2]);
+    else if(directive == "frameworks"s && size == 3)
+      builder = &builder->frameworks(result[1], result[2]);
     else if(directive == "bin"s && size == 2)
       builder = &builder->bin(result[1]);
     else if(directive == "add"s)
@@ -104,6 +106,8 @@ BuilderBase& Loader::load_file(const std::string& file, BuilderBase* initial_bui
         builder = &builder->add_lib(result[2]);
       else if(sub == "lib"s && size == 4)
         builder = &builder->add_lib(result[2], result[3]);
+      else if(sub == "framework"s && size == 4)
+        builder = &builder->add_framework(result[2], result[3]);
       else if(sub == "def"s && size == 3)
         builder = &builder->add_def(result[2]);
     }
